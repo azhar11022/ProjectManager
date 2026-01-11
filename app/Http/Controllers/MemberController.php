@@ -32,9 +32,9 @@ class MemberController extends Controller
         $user = auth()->user();
         $tenant = $user->tenant_id;
 
-        $tenantTable = Tenant::find($tenant);
+        $domain = auth()->user()->tenant;
 
-        $request->email = $request->email."@".$tenantTable->domain.".com";
+        $request->email = $request->email."@".$domain.".com";
         $member = Member::where('email',$request->email)->first();
         if($member){
             return response()->json([
@@ -94,9 +94,9 @@ class MemberController extends Controller
 
         $user = auth()->user();
         $tenant = $user->tenant_id;
-        $tenantTable = Tenant::find($tenant);
+        $domain = auth()->user()->tenant;
 
-        $request->email = $request->email ? $request->email."@".$tenantTable->domain.".com" : null;
+        $request->email = $request->email ? $request->email."@".$domain.".com" : null;
         $member = Member::where('email',$request->email)->where('id','!=',$id)->first();
 
         if($member){

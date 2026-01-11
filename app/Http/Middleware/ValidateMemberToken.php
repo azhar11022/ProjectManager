@@ -66,7 +66,7 @@ class ValidateMemberToken
         if (!$member) {
             return response()->json(['message' => 'Member not found'], 401);
         }
-
+        $member->tenant = $tenant->domain;
         // Set authenticated user
         auth()->setUser($member);
         $request->setUserResolver(fn () => $member);

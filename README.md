@@ -36,6 +36,30 @@ A Laravel-based multi-tenant project management system with database-level tenan
 3. Validate token in tenant DB
 4. Authenticate member
 
+## API end points
+# /login =  post ['email','password']
+#  /register = post ['name','email','password','password_confirmation','company_name','company_short_code']
+
+# protected routes with token 
+# /projects = get
+# /projects = post ['name']
+# /projects/{id} = get // single project with tasks
+# /projects/{id} = put ['name]
+# /projects/{id} = delete
+
+# /projects/{pid}/tasks/{id} = get  // single task
+# /projects/{pid}/tasks = post['name','duration']
+# /projects/{pid}/tasks/{id} = put ['name','duration']
+# /projects/{pid}/tasks/{id} = delete
+
+# /members = get
+# /members/{id} = get
+# /members = post ['name','email','password','password_confirmation','role'] // email should be simple name like khan or ak4030799 without @example.com
+# /members/{id} = put ['name','email','password','password_confirmation','role'] //email should be simple name like khan or ak4030799 without @example.com
+# /members/{id} = delete
+
+
+
 ## 🚀 Quick Start
 ```bash
 git clone https://github.com/azhar11022/ProjectManager.git
