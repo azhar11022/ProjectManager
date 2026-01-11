@@ -115,10 +115,10 @@ DELETE /api/projects/1/tasks/1
 Authorization: Bearer {tenant_id}|{member_id}|{token}
 
 GET /api/members
-Authorization: Bearer {tenant_id}|{member_id}|{token}
+Authorization: Bearer {tenant_id}|{member_id}|{token} // only the admin can see all members
 
 GET /api/members/1
-Authorization: Bearer {tenant_id}|{member_id}|{token}
+Authorization: Bearer {tenant_id}|{member_id}|{token} obly the admin and the user itself can see
 
 POST /api/members
 Authorization: Bearer {tenant_id}|{member_id}|{token}
