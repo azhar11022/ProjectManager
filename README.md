@@ -199,6 +199,8 @@ php artisan optimize:clear
 
 # View routes
 php artisan route:list
+
+
 📄 License
 MIT License
 
