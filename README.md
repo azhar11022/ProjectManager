@@ -43,19 +43,34 @@ cd ProjectManager
 composer install
 cp .env.example .env
 php artisan key:generate
-php artisan tenant:seed-all
-php artisan serve
-curl -X POST http://localhost:8000/api/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"azhar@example.com","password":"password123"}'
-curl -X GET http://localhost:8000/api/projects \
-  -H "Authorization: Bearer 1|123|abc123def456..."
-# Full setup
-php artisan tenant:seed-all
 
-# Run migrations
+# 1. Run central database migrations
 php artisan migrate
-php artisan migrate --database=tenant --path=database/migrations/tenant
 
-# Clear caches
-php artisan optimize:clear
+# 2. Seed all data (creates tenants, tenant databases, runs migrations, and seeds demo data)
+php artisan tenant:seed-all
+
+php artisan serve
+
+
+# demo data
+
+🧪 Demo Data
+After php artisan tenant:seed-all:
+
+Tenants Created:
+Tech Corp (db_tech)
+
+Admin: azhar@example.com / password123
+
+Members: member1@tech.com, member2@tech.com
+
+2 projects, 10 tasks
+
+Market Pro (db_market)
+
+Admin: ali@example.com / password123
+
+Members: member1@market.com, member2@market.com
+
+2 projects, 10 tasks
