@@ -1,4 +1,4 @@
-# Project Management System - Multi-Tenant Architecture
+echo '# Project Management System - Multi-Tenant Architecture
 
 ![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat&logo=laravel)
 ![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?style=flat&logo=php)
@@ -36,68 +36,171 @@ A Laravel-based multi-tenant project management system with database-level tenan
 3. Validate token in tenant DB
 4. Authenticate member
 
+---
 
-## complete APIs
-## API end points
-** /login =  post ['email','password']**
-**  /register = post ['name','email','password','password_confirmation','company_name','company_short_code']**
+## 📖 API Documentation
 
-## protected routes with token 
-** /projects = get **
-** /projects = post ['name'] **
-** /projects/{id} = get // single project with tasks **
-** /projects/{id} = put ['name] **
-** /projects/{id} = delete **
+### Authentication APIs
 
-** /projects/{pid}/tasks/{id} = get  // single task **
-** /projects/{pid}/tasks = post['name','duration'] **
-** /projects/{pid}/tasks/{id} = put ['name','duration'] **
-** /projects/{pid}/tasks/{id} = delete **
+#### **POST /login** - Login to get access token
+```http
+
+POST /api/login
+Content-Type: application/json
+
+{
+  "email": "azhar@example.com",
+  "password": "password123"
+}
+
+POST /api/register
+Content-Type: application/json
+
+{
+  "name": "Admin Name",
+  "email": "admin@example.com",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "company_name": "Company Name",
+  "company_short_code": "company"
+}
+
+GET /api/projects
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+POST /api/projects
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+Content-Type: application/json
+
+{
+  "name": "Project Name"
+}
+
+GET /api/projects/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+PUT /api/projects/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+Content-Type: application/json
+
+{
+  "name": "Updated Project Name"
+}
+
+DELETE /api/projects/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+POST /api/projects/1/tasks
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+Content-Type: application/json
+
+{
+  "name": "Task Name",
+  "duration": "5 days"
+}
+
+GET /api/projects/1/tasks/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+PUT /api/projects/1/tasks/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+Content-Type: application/json
+
+{
+  "name": "Updated Task Name",
+  "duration": "3 days"
+}
+
+DELETE /api/projects/1/tasks/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+GET /api/members
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+GET /api/members/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+POST /api/members
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+Content-Type: application/json
+
+{
+  "name": "Member Name",
+  "email": "simpleusername",
+  "password": "password123",
+  "password_confirmation": "password123",
+  "role": "member"
+}
+
+Note: Email should be simple username (without @domain.com)
+
+PUT /api/members/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "email": "updatedusername",
+  "password": "newpassword123",
+  "password_confirmation": "newpassword123",
+  "role": "admin"
+}
+
+DELETE /api/members/1
+Authorization: Bearer {tenant_id}|{member_id}|{token}
+
+POST /api/logout
+Authorization: Bearer {tenant_id}|{member_id}|{token}
 
 
-** /members = get **
-** /members/{id} = get **
-** /members = post ['name','email','password','password_confirmation','role'] // email should be simple name like khan or ak4030799 without @example.com **
-** /members/{id} = put ['name','email','password','password_confirmation','role'] //email should be simple name like khan or ak4030799 without @example.com **
-** /members/{id} = delete **
 
-
-
-## 🚀 Quick Start
-```bash
+# Clone repository
 git clone https://github.com/azhar11022/ProjectManager.git
 cd ProjectManager
+
+# Install dependencies
 composer install
+
+# Configure environment
 cp .env.example .env
 php artisan key:generate
 
-# 1. Run central database migrations
+# Setup databases and seed demo data
 php artisan migrate
-
-# 2. Seed all data (creates tenants, tenant databases, runs migrations, and seeds demo data)
 php artisan tenant:seed-all
 
+# Start development server
 php artisan serve
 
-
-# demo data
-
 🧪 Demo Data
-After php artisan tenant:seed-all:
+After running php artisan tenant:seed-all, you get:
 
-Tenants Created:
 Tech Corp (db_tech)
-
 Admin: azhar@example.com / password123
 
 Members: member1@tech.com, member2@tech.com
 
-2 projects, 10 tasks
+Data: 2 projects, 10 tasks
 
 Market Pro (db_market)
-
 Admin: ali@example.com / password123
 
 Members: member1@market.com, member2@market.com
 
-2 projects, 10 tasks
+Data: 2 projects, 10 tasks
+
+
+# Complete setup
+php artisan migrate
+php artisan tenant:seed-all
+
+# Clear caches
+php artisan optimize:clear
+
+# View routes
+php artisan route:list
+📄 License
+MIT License
+
+👤 Author
+azhar11022 - GitHub' > README.md
