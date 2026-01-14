@@ -2,156 +2,140 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Member;
-use App\Models\Tenant;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreMemberRequest;
+use App\Http\Requests\UpdateMemberRequest;
+use App\Http\Resources\MemberResource;
+use App\Models\Member;
 use Illuminate\Support\Facades\Hash;
 
 class MemberController extends Controller
 {
     // fetch members for tenant
-    public function index(){
+    public function index()
+    {
         $user = auth()->user();
         $tenant = $user->tenant_id;
-        $members = Member::where('tenant_id',$tenant)->get();
-        return response()->json([
-            'members'=>$members
-        ],201);
+        $members = Member::where('tenant_id', $tenant)->get();
+        return MemberResource::collection($members);
     }
 
     // create new member
-    public function store(Request $request){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'sometimes|string|in:admin,member',
-        ]);
+    public function store(StoreMemberRequest $request)
+    {
         $user = auth()->user();
-        $tenant = $user->tenant_id;
 
+        // Authorization check
+        if ($user->role != 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $tenant = $user->tenant_id;
         $domain = auth()->user()->tenant;
 
-        $request->email = $request->email."@".$domain.".com";
-        $member = Member::where('email',$request->email)->first();
-        if($member){
-            return response()->json([
-                'message'=>'Email already exists'
-            ],409);
+        // Mutate email to include domain
+        $email = $request->email . "@" . $domain . ".com";
+
+        if (Member::where('email', $email)->exists()) {
+            return response()->json(['message' => 'Email already exists'], 409);
         }
 
-        $role = $user->role;
-        if($role != 'admin'){
-            return response()->json([
-                'message'=>'Project not found'
-            ],404);
-        }
         $member = Member::create([
-            'name'=>$request->name,
-            'email'=>$request->email,
-            'password'=>Hash::make($request->password),
-            'tenant_id'=>$tenant,
-            'role'=>$request->role ?? 'member'
+            'name' => $request->name,
+            'email' => $email,
+            'password' => Hash::make($request->password),
+            'tenant_id' => $tenant,
+            'role' => $request->role ?? 'member'
         ]);
+
         return response()->json([
-            'message'=>'Member created successfully',
-            'member'=>$member
-        ],201);
+            'message' => 'Member created successfully',
+            'member' => new MemberResource($member)
+        ], 201);
     }
 
-
-    public function show($id){
-
+    public function show($id)
+    {
         $user = auth()->user();
         $tenant = $user->tenant_id;
-        if($user->role != 'admin' && $user->id != $id){
-            return response()->json([
-                'message'=>'Project not found'
-            ],404);
+
+        $member = Member::where('tenant_id', $tenant)->where('id', $id)->first();
+
+        if (!$member) {
+            return response()->json(['message' => 'Member not found'], 404);
         }
-        $member = Member::where('tenant_id',$tenant)->where('id',$id)->first();
-        if(!$member){
-            return response()->json([
-                'message'=>'Member not found'
-            ],404);
+
+        if ($user->role != 'admin' && $user->id != $id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
-        return response()->json([
-            'member'=>$member
-        ],201);
+
+        return response()->json(['member' => new MemberResource($member)], 200);
     }
 
-
-    public function update(Request $request, $id){
-
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|max:255,'.$id,
-            'password' => 'sometimes|string|min:8|confirmed',
-            'role' => 'sometimes|string|in:admin,member',
-        ]);
-
+    public function update(UpdateMemberRequest $request, $id)
+    {
         $user = auth()->user();
         $tenant = $user->tenant_id;
         $domain = auth()->user()->tenant;
 
-        $request->email = $request->email ? $request->email."@".$domain.".com" : null;
-        $member = Member::where('email',$request->email)->where('id','!=',$id)->first();
+        $member = Member::where('tenant_id', $tenant)->where('id', $id)->first();
 
-        if($member){
-            return response()->json([
-                'message'=>'Email already exists'
-            ],409);
+        if (!$member) {
+            return response()->json(['message' => 'Member not found'], 404);
         }
-        if($user->role != 'admin' && $user->id != $id){
-            return response()->json([
-                'message'=>'Project not found'
-            ],404);
+
+        if ($user->role != 'admin' && $user->id != $id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
-        $member = Member::where('tenant_id',$tenant)->where('id',$id)->first();
-        if(!$member){
-            return response()->json([
-                'message'=>'Member not found'
-            ],404);
+
+        // Email check logic
+        if ($request->filled('email')) {
+            $email = $request->email . "@" . $domain . ".com";
+            if (Member::where('email', $email)->where('id', '!=', $id)->exists()) {
+                return response()->json(['message' => 'Email already exists'], 409);
+            }
+            if ($user->role == 'admin') {
+                $member->email = $email;
+            }
         }
-        $member->name = $request->name ?? $member->name;
-        if($user->role == 'admin'){
-            $member->email = $request->email;
+
+        if ($request->filled('name')) {
+            $member->name = $request->name;
         }
-        if($request->password){
+
+        if ($request->filled('password')) {
             $member->password = Hash::make($request->password);
         }
-        if($user->role == 'admin' && $request->role){
+
+        if ($user->role == 'admin' && $request->filled('role')) {
             $member->role = $request->role;
         }
+
         $member->save();
+
         return response()->json([
-            'message'=>'Member updated successfully',
-            'member'=>$member
-        ],201);
+            'message' => 'Member updated successfully',
+            'member' => new MemberResource($member)
+        ], 200);
     }
 
-
-    public function destroy($id){
-
+    public function destroy($id)
+    {
         $user = auth()->user();
+
+        if ($user->role != 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $tenant = $user->tenant_id;
-        $role = $user->role;
-        if($role != 'admin'){
-            return response()->json([
-                'message'=>'Project not found'
-            ],404);
+        $member = Member::where('tenant_id', $tenant)->where('id', $id)->first();
+
+        if (!$member) {
+            return response()->json(['message' => 'Member not found'], 404);
         }
-        $member = Member::where('tenant_id',$tenant)->where('id',$id)->first();
-        if(!$member){
-            return response()->json([
-                'message'=>'Member not found'
-            ],404);
-        }
+
         $member->delete();
-        return response()->json([
-            'message'=>'Member deleted successfully'
-        ],201);
+
+        return response()->json(['message' => 'Member deleted successfully'], 200);
     }
 }

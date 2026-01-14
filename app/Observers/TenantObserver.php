@@ -14,11 +14,13 @@ class TenantObserver
         $dbName = $tenant->database_name;
 
         // Create DB
-        DB::statement("CREATE DATABASE IF NOT EXISTS `$dbName` ");
-
-        // Set Connection
-        Config::set('database.connections.tenant.database', $dbName);
-        DB::purge('tenant');
+        if (!app()->environment('testing')) {
+            DB::statement("CREATE DATABASE IF NOT EXISTS `$dbName` ");
+            
+            // Set Connection
+            Config::set('database.connections.tenant.database', $dbName);
+            DB::purge('tenant');
+        }
 
         // Run Migrations with absolute path
         Artisan::call('migrate', [

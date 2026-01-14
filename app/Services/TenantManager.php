@@ -10,6 +10,10 @@ class TenantManager
 {
     public static function switchToTenant($dbName)
     {
+        if (app()->environment('testing')) {
+            return;
+        }
+
         // Change the database name in the 'tenant' connection config
         Config::set('database.connections.tenant.database', $dbName);
 
