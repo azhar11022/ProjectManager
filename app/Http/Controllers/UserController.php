@@ -116,6 +116,7 @@ class UserController extends Controller
         $member = auth()->user();
         if ($member) {
             $member->currentAccessToken()->delete();
+            // return response()->json(['message' => 'Logged out successfully.']);
         }
         return response()->json(['message' => 'Logged out successfully.']);
     }

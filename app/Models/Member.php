@@ -179,11 +179,20 @@ class Member extends Authenticatable
     }
 
     /**
+     * Set the current access token for the member
+     */
+    public function withAccessToken($accessToken)
+    {
+        $this->accessToken = $accessToken;
+        return $this;
+    }
+
+    /**
      * Get the current access token
      */
     public function currentAccessToken()
     {
-        return $this->accessToken ?? null;
+        return $this->accessToken;
     }
 
     /**
